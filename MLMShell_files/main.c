@@ -10,6 +10,14 @@ int count(char* buffer)
     //do some stuff here, come on this should be easy guys!
     return count;
 }
+void cd(char *path);
+void clr();
+void dir();
+void environ();
+void echo(char *string);
+void help();
+void paws(); //word pause causes an error
+void quit();
 
 int main(int argc, char **argv)
 {
