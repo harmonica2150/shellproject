@@ -93,6 +93,6 @@ void help() {
 
 }
 
-void clear() {
+void clr() {
     system("clear");
 }
