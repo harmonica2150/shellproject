@@ -79,3 +79,20 @@ int main(int argc, char **argv)
         }
         return 0;
 }
+
+void help() {
+    printf(stdout, "               MyShell Help\n");
+    printf(stdout, "cd <directory> - Change the current default directory to <directory>.\n");
+    printf(stdout, "clr - Clear the screen.\n");
+    printf(stdout, "dir <directory> - List the contents of <directory>.\n");
+    printf(stdout, "environ - List all the environment strings.\n");
+    printf(stdout, "echo <comment> - Display <comment> on the display followed by a new line.\n");
+    printf(stdout, "help - Display the user manual.\n");
+    printf(stdout, "pause - Pause operation of the shell until 'Enter' is pressed.\n");
+    printf(stdout, "quit - Quit the shell.\n");
+
+}
+
+void clear() {
+    system("clear");
+}
