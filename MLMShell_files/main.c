@@ -51,28 +51,36 @@ int main(int argc, char **argv)
     */
     while(strcmp(args[0],"quit")) // while first arg is NOT "quit"
     {
-    /* Clear the terminal. This will use the system's terminal to clear
-    the terminal of all input and output that has been processed
-    by any previous commands.
-    */
-        if (!strcmp(args[0],"clr")) // if first arg is "clear"
+        /* Clear the terminal. This will use the system's terminal to clear
+the terminal of all input and output that has been processed
+by any previous commands.
+*/
+        if (!strcmp(args[0],"clear")) // if first arg is "clear"
         {
             system("clear");	// send clear command to unix term
         }
 
-//        /* List the directory contents. This will use the terminal's "ls" command
-//        to display all the contents of the folder specified, including permissions
-//        and hidden files. If no directory is specified, it will list the current
-//        directory's contents.
-//        */
-//        if (!strcmp(args[0],"dir"))
-//        {
-//            dir();
-//        }
+        /* List the directory contents. This will use the terminal's "ls" command
+to display all the contents of the folder specified, including permissions
+and hidden files. If no directory is specified, it will list the current
+directory's contents.
+*/
+        if (!strcmp(args[0],"dir"))
+        {
+            if (args[1] != NULL)	// if <directory> exists
+            {
+                sprintf(dirCommand, "ls -al %s", args[1]);
+                system(dirCommand);	// send "ls -al <directory>" to term
+            }
+            else
+            {
+                system("ls -al");	// if <directory> does not exist
+            }
+        }
 
         /* Print everything after the command "echo" in a new line. Will
-        reduce all tabs and double spaces to one whitespace.
-        */
+reduce all tabs and double spaces to one whitespace.
+*/
         if (!strcmp(args[0],"echo"))
         {
             int i = 1;
@@ -84,38 +92,46 @@ int main(int argc, char **argv)
             printf("\n");
         }
 
-//        /* Prints out the environment variables. It will print the location
-//        the shell, including the binary name, and the current directory.
-//        */
-//        if (!strcmp(args[0],"environ"))
-//        {
-//            environ(args[0]);
-//        }
-
-//        /* Change the current directory, or list directory contents if no
-//        directory is specified. It uses the POSIX function 'chdir' to
-//        change directory. If
-//        */
-
-//        if (!strcmp(args[0],"cd"))
-//        {
-//            cd();
-//        }
-
-        /* Pause the shell. It allows the user to input any keystroke within
-        the shell without manipulating the shell in anyway. Only when the
-        user presses the [Enter] key will the shell return back to the
-        command prompt.
-        */
-        if (!strcmp(args[0],"pause"))
+        /* Prints out the environment variables. It will print the location
+the shell, including the binary name, and the current directory.
+*/
+        if (!strcmp(args[0],"environ"))
         {
-            system("read -p \"Please press 'Enter' to continue...\"");
+            printf("Shell: %s",shellLocation, "%s", argv[0]);
+            printf("\nCurrent Directory: %s\n", path);
         }
 
-//        if (!strcmp(args[0],"help"))
-//        {
-//            help();
-//        }
+        /* Change the current directory, or list directory contents if no
+directory is specified. It uses the POSIX function 'chdir' to
+change directory. If
+*/
+        if (!strcmp(args[0],"cd"))
+        {
+            if (args[1] == NULL)
+            {
+                system("ls -al");
+            }
+            if (chdir(args[1]) != 0)
+            {
+                perror("cd");
+            }
+        }
+
+        /* Pause the shell. It allows the user to input any keystroke within
+the shell without manipulating the shell in anyway. Only when the
+user presses the [Enter] key will the shell return back to the
+command prompt.
+*/
+        if (!strcmp(args[0],"pause"))
+        {
+            system("read -p \"Press [Enter] to continue...\"");
+        }
+
+        if (!strcmp(args[0],"help"))
+        {
+            sprintf(helpCommand,"more %s/readme", shellLocation);
+            system(helpCommand);
+        }
 
         getcwd(path, sizeof(path));
         // give prompt, take user input
@@ -124,8 +140,8 @@ int main(int argc, char **argv)
         fgets(userInputBuffer,MAX_BUFFER,stdin);
 
         /* Tokenize user input. This block of code will tokenize the user input using
-        the tokens defined at the top, and store it in the args char array.
-        */
+the tokens defined at the top, and store it in the args char array.
+*/
         arg = args;
         *arg++ = strtok(userInputBuffer, tokens);
         while(*arg++ = strtok(NULL, tokens));
@@ -138,6 +154,8 @@ int main(int argc, char **argv)
 
 
 
+
+
 ///* Change the current directory, or list directory contents if no
 //directory is specified */
 //void cd(){
@@ -145,10 +163,10 @@ int main(int argc, char **argv)
 //    {
 //        system("ls -al");
 //    }
-//        if (chdir(args[1]) != 0)
-//        {
-//            perror("cd");
-//        }
+//    if (chdir(args[1]) != 0)
+//    {
+//        perror("cd");
+//    }
 //}
 
 ///* Clear the terminal. This will use the system's call to clear
@@ -159,17 +177,17 @@ int main(int argc, char **argv)
 
 ///* List the directory contents.  If no directory is specified, it will list the current
 //directory's contents. */
-//void dir(){
-//    if (args[1] != NULL)	// if <directory> exists
-//    {
-//        sprintf(dirCommand, "ls -al %s", args[1]);
-//        system(dirCommand);	// send "ls -al <directory>" to term
-//    }
-//    else
-//    {
-//        system("ls -al");	// if <directory> does not exist
-//    }
-//}
+////void dir(args1){
+////    if (args[1] != NULL)	// if <directory> exists
+////    {
+////        sprintf(dirCommand, "ls -al %s", args[1]);
+////        system(dirCommand);	// send "ls -al <directory>" to term
+////    }
+////    else
+////    {
+////        system("ls -al");	// if <directory> does not exist
+////    }
+////}
 
 ///* Prints out the environment variables. It prints the location
 //of the shell, including the binary name, and the current directory.*/
@@ -186,7 +204,7 @@ int main(int argc, char **argv)
 //        i++;
 //    }
 //    printf("\n");
-// }
+//}
 
 //void paws (){ //word pause causes an error
 //    system("read -p \"Please press 'Enter' to continue...\"");
