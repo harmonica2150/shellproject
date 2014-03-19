@@ -103,7 +103,6 @@ void run(char *line){                         //function to run commands
         char * myPath = malloc(snprintf(NULL, 0, "%s %s", "parent=", getenv("shell")) + 1);
         char *envp[] = { myPath, (char *) 0};
         if(pid == 0) {
-            //execv(envargs[0], envargs);
             int execReturn = execve(args[0], args, envp);
             if (execReturn == -1){
                 printf("execv failed.");
