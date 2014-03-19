@@ -19,6 +19,11 @@ int main(int argc, char **argv)
     char dirCommand[MAX_BUFFER];	// store "cd " and <directory> specified
     char helpCommand[MAX_BUFFER];
     
+    /* Variables regarding to i/o redirection */
+    char redirectFile[3][MAX_FILENAME]; 		// filename: index 0 => append, 1 => write, 2 => read
+    char redirectFlag[3];				// simple boolean to check what actions should be tacken 
+    char *redirectChars[3] = { ">>", ">",  "<" };	// redirection symboles
+    
     getcwd(shellLocation, sizeof(shellLocation));	// store location of shell for environ
     getcwd(path, sizeof(path));	// get current path, store in "path"
     
@@ -34,6 +39,22 @@ int main(int argc, char **argv)
     while (*arg++ = strtok(NULL, tokens));	// tokenizes next input
     
     
+    
+    /* Handle i/o redirection */
+    void ioRedirect(int readAllowed) {
+	    if(redirectFlag[0] == 1)			// if flag index 0 on = '>>'
+  		    freopen(redirectFile[0], "a", stdout);		// append stdout into the file 
+	    if(redirectFlag[1] == 1)			// if flag index 1 on = '>'
+		    freopen(redirectFile[1], "w", stdout);		// write stdout into the file
+	    if(redirectFlag[2] == 1 && readAllowed == 1) 	// if flag index 2 on = '<' and read allowed
+		    freopen(redirectFile[2], "r", stdin);		// read stdin from the file
+    }
+
+/* Restore output redirection */
+    void ioRedirectClose() {
+	    if(redirectFlag[0] || redirectFlag[1])		// if any flag is on
+		    freopen("/dev/tty","w",stdout);			// restore output to the screen	
+    }
     
     /* This is where all the commands will be defined. After taking the user input,
     this program will enter the while loop below and stay in the loop until
