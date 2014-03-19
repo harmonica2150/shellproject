@@ -149,8 +149,3 @@ the tokens defined at the top, and store it in the args char array.
     printf("Exiting myShell...\n");
     return EXIT_SUCCESS;
 }
-
-//void quit(){
-//    printf("Exiting myShell...\n");
-//    return EXIT_SUCCESS;
-//}
