@@ -8,15 +8,6 @@
 #define ARGS_BUFFER 64
 #define tokens " \n\t"
 
-//void cd();
-//void clr();
-//void dir();
-//void environ(char);
-//void echo();
-//void help();
-//void paws(); //word pause causes an error
-//void quit();
-
 
 int main(int argc, char **argv)
 {
