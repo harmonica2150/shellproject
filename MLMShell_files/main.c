@@ -1,208 +1,210 @@
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
-#include <stdlib.h>
+#include <string.h>
 #include <dirent.h>
+#include <stdlib.h>
+#include <assert.h>
 
-#define MAX_BUFFER 1024
-#define ARGS_BUFFER 64
-#define tokens " \n\t"
+char *cdir;
+void batch(char *b); //reads a batch file and excecutes the contents
+void run(char *line); // calls correct function based on user input
+void empties(); //called when no user input is detected
+void cd(char *path); //changes the current directory 
+void dir(char *input); //lists current directory contents
+void clr(); //clears the screen of previous commands
+void env(); //displays the environment variables
+void echo(char *string); //repeats inputted content on a new line
+void help(); //displays the help content
+void paws(); //pauses the shell
 
-
-int main(int argc, char **argv)
-{
-    char userInputBuffer[MAX_BUFFER];	// contains user input
-    char * args[ARGS_BUFFER];	// array of tokenized arguments
-    char ** arg;	// allow input of args into args[]
-    char path[MAX_BUFFER];	// store current path
-    char shellLocation[MAX_BUFFER];	// store current location of shell
-    char dirCommand[MAX_BUFFER];	// store "cd " and <directory> specified
-    char helpCommand[MAX_BUFFER];
-    
-    /* Variables regarding to i/o redirection */
-    char redirectFile[3][MAX_FILENAME]; 		// filename: index 0 => append, 1 => write, 2 => read
-    char redirectFlag[3];				// simple boolean to check what actions should be tacken 
-    char *redirectChars[3] = { ">>", ">",  "<" };	// redirection symboles
-    
-    getcwd(shellLocation, sizeof(shellLocation));	// store location of shell for environ
-    getcwd(path, sizeof(path));	// get current path, store in "path"
-    
-    printf("%s> ",path);	// command prompt containing the current path
-    fflush(stdout);
-    fgets(userInputBuffer,MAX_BUFFER,stdin); // put input into userInputBuffer
-    
-    /* Tokenize user input. This block of code will tokenize the user input using
-    the tokens defined at the top, and store it in the args char array.
-    */
-    arg = args;
-    *arg++ = strtok(userInputBuffer, tokens); // tokenizes first input
-    while (*arg++ = strtok(NULL, tokens));	// tokenizes next input
-    
-    
-    
-    /* Handle i/o redirection */
-    void ioRedirect(int readAllowed) {
-	    if(redirectFlag[0] == 1)			// if flag index 0 on = '>>'
-  		    freopen(redirectFile[0], "a", stdout);		// append stdout into the file 
-	    if(redirectFlag[1] == 1)			// if flag index 1 on = '>'
-		    freopen(redirectFile[1], "w", stdout);		// write stdout into the file
-	    if(redirectFlag[2] == 1 && readAllowed == 1) 	// if flag index 2 on = '<' and read allowed
-		    freopen(redirectFile[2], "r", stdin);		// read stdin from the file
+/* Handles all calls. Specifically, it decides whether the user is using a batch file, or inputting lines manually.
+*/
+int main(int argc, char *argv[]){
+    (getcwd(cdir, sizeof(cdir)) != NULL);
+    if(argc==1){
+        empties();
+    }else if(argc==2){
+        batch(argv[1]);
+    }else{
+        fprintf(stdout,"why so many parameters!?!?");
     }
-
-/* Restore output redirection */
-    void ioRedirectClose() {
-	    if(redirectFlag[0] || redirectFlag[1])		// if any flag is on
-		    freopen("/dev/tty","w",stdout);			// restore output to the screen	
-    }
-    
-    /* This is where all the commands will be defined. After taking the user input,
-    this program will enter the while loop below and stay in the loop until
-    the user enters "quit".
-    */
-    while(1)
-    {
-        /* Clear the terminal. This will use the system's terminal to clear
-the terminal of all input and output that has been processed
-by any previous commands.
-*/
-        if (!strcmp(args[0],"clr")) // if first arg is "clear"
-        {
-            system("clear");	// send clear command to unix term
-        }
-        
-        /* List the directory contents. This will use the terminal's "ls" command
-to display all the contents of the folder specified, including permissions
-and hidden files. If no directory is specified, it will list the current
-directory's contents.
-*/
-        if (!strcmp(args[0],"dir"))
-        {
-            if (args[1] != NULL)	// if <directory> exists
-            {
-                sprintf(dirCommand, "ls -al %s", args[1]);
-                system(dirCommand);	// send "ls -al <directory>" to term
-            }
-            else
-            {
-                system("ls -al");	// if <directory> does not exist
-            }
-        }
-        
-        /* Print everything after the command "echo" in a new line. Will
-reduce all tabs and double spaces to one whitespace.
-*/
-        if (!strcmp(args[0],"echo"))
-        {
-            int i = 1;
-            while ( args[i] != NULL)
-            {
-                printf("%s ", args[i]);
-                i++;
-            }
-            printf("\n");
-        }
-        
-        /* Prints out the environment variables. It will print the location
-the shell, including the binary name, and the current directory.
-*/
-        if (!strcmp(args[0],"environ"))
-        {
-            printf("shell= %s",shellLocation, "%s", argv[0]);
-            printf("\nCurrent Directory: %s\n", path);
-        }
-        
-        /* Change the current directory, or list directory contents if no
-directory is specified. It uses the POSIX function 'chdir' to
-change directory. If
-*/
-        if (!strcmp(args[0],"cd"))
-        {
-            if (args[1] == NULL)
-            {
-                system("ls -al");
-            }
-            if (chdir(args[1]) != 0)
-            {
-                perror("cd");
-            }
-        }
-        
-        /* Pause the shell. It allows the user to input any keystroke within
-the shell without manipulating the shell in anyway. Only when the
-user presses the [Enter] key will the shell return back to the
-command prompt.
-*/
-        if (!strcmp(args[0],"pause"))
-        {
-            system("read -p \"Press [Enter] to continue...\"");
-        }
-        
-        if (!strcmp(args[0],"help"))
-        {
-            sprintf(helpCommand,"more %s/readme", shellLocation);
-            system(helpCommand);
-        }
-        
-        if (!strcmp(!args[0],"quit")) // while first arg is NOT "quit"
-        {
-            break;
-        }
-        
-        if(strcmp(args[0], "quit" || "help" || "pause" || "cd" || "environ" || "echo" || "dir" || "clr")){
-            pid_t pid;
-            pid = fork();
-            if (pid == -1) {
-                /* When fork() returns -1, an error occured. */
-                perror("fork failed");
-                exit(EXIT_FAILURE);
-            }
-            else if (pid == 0) {
-                /* When fork() returns 0, we are in the child process. */
-                printf("Child: PID of Child = %ld\n", (long) getpid());
-                execvp(args[0], args); /* arg[0] has the command name. */
-                exit(EXIT_SUCCESS);  /* exit() is unreliable here, so _exit must be used */
-            }
-            else {
-                /* When fork() returns a positive number, we are in the parent process
-                   and the return value is the PID of the newly created child process. */
-                int status;
-                (void)waitpid(pid, &status, 0);
-            }
-        }
-        
-        getcwd(path, sizeof(path));
-        // give prompt, take user input
-        printf("%s> ", path);
-        fflush(stdout);
-        fgets(userInputBuffer,MAX_BUFFER,stdin);
-        
-        /* Tokenize user input. This block of code will tokenize the user input using
-the tokens defined at the top, and store it in the args char array.
-*/
-        arg = args;
-        *arg++ = strtok(userInputBuffer, tokens);
-        while(*arg++ = strtok(NULL, tokens));
-    }
-    printf("Exiting myShell...\n");
-    return EXIT_SUCCESS;
+    return 1;
 }
 
-void readBatchFile(char filename[MAX_FILENAME]) {
-    FILE *fp;
-    int lineNo = 1;
+/* Called when the program has no parameters passed into it.
+*/
+void empties(){
+    cd(NULL);
+    fprintf(stdout,">");
+    while(1){
+        char command[1024];
+        gets(command);
+        char *input = strtok(command, " ");
+        run(input);
+        cd(NULL);
+        fprintf(stdout,">");
+    }
+}
+
+/* Read batch file and execute the commands inside it 
+*/
+void batch(char *b){
+    FILE *f = fopen(b,"r");
+    char *line;
+    while(fscanf(f, "%s\n", line) != EOF){
+        run(line);
+    }
+}
+
+/* Handles all inputs and calls the respective functions.
+*/
+void run(char *line){
+    if(strcmp(line,"cd")==0)
+        cd(line);
+    else if(strcmp(line,"dir")==0)
+        dir(line);
+    else if(strcmp(line,"clr")==0)
+        clr();
+    else if(strcmp(line,"enviro")==0)
+        env();
+    else if(strcmp(line,"echo")==0)
+        echo(line);
+    else if(strcmp(line,"help")==0)
+        help();
+    else if(strcmp(line,"pause")==0)
+        paws();
+    else if(strcmp(line,"quit")==0)
+        exit(1);
+    else{
+        char *args[20];
+        int a = 0;
+        int b = 20;
+        while (line != NULL) {
+           if (a == b) {
+                b = b * 2;
+                a = b;
+                *args = (char *)realloc(*args, b);
+           }
+           args[a] = line;
+           a++;
+           line = strtok(NULL, " ");
+        }
+        args[a] = (char *)0;
+        pid_t pid = fork();
+        char * myPath = malloc(snprintf(NULL, 0, "%s %s", "parent=", getenv("shell")) + 1);
+        char *envp[] = { myPath, (char *) 0};
+        if(pid == 0) {
+            //execv(envargs[0], envargs);
+            int execReturn = execve(args[0], args, envp);
+            if (execReturn == -1){
+                printf("execv failed.");
+                exit(0);
+            }
+        }else if(pid < 0)
+            printf("\nFork() failed.");
+        else{}
+    }
+}
+
+/*	Prints out the following lines to tell the user how to use myShell
+*/
+void help() {
+    fprintf(stdout, "***** HELP ***** HELP IS HERE ***** HELP ***** HELP IS HERE *****\n");
+    fprintf(stdout, "* -------------- Command Manual --------------- *\n");
+    fprintf(stdout, "* @ cd - Transports the lucky bloke to a target directory *\n");
+    fprintf(stdout, "* @ clr - Removes the presence of all that has transpired. *\n");
+    fprintf(stdout, "* @ dir - Generously provides the files/folders of the current directory. *\n");
+    fprintf(stdout, "* @ enviro - Delivers a pedantic ecological dissertation on the environmental variables. *\n");
+    fprintf(stdout, "* @ echo - Mimics the command given, be careful. *\n");
+    fprintf(stdout, "* @ help - Here we are my good sir. *\n");
+    fprintf(stdout, "* @ pause - Wait for it... *\n");
+    fprintf(stdout, "* @ quit - Delivers the final blow to this shell. Same as: exit, and kill. *\n");
+    fprintf(stdout, "***** HELP ***** HELP IS HERE ***** HELP ***** HELP IS HERE *****\n");
+}
+
+/*	Prints everything after the command "echo" in a new line.
+*/
+void echo(char *input) {
     
-    fp = fopen(filename, "r");	// open the batch file
-    if(fp == NULL)
-        error("Batch file does not exist");
+	if (input == NULL)
+        fprintf(stdout, "Nothing to echo");
+    else{
+        input = strtok(NULL, " ");
+        while(input !=NULL){
+            fprintf(stdout, "%s ", input);
+            input = strtok(NULL, " ");
+        }
+        fprintf(stdout, "\n");
+    }
+}
+
+/*	Prints out the environment variables. It will print the location
+		of the shell.
+*/
+void env() {
+    extern char **environ;
+    int i = 0;
+    while (environ[i])
+        fprintf(stdout, "%s\n", environ[i++]);
+}
+
+/*	Lists contents of a directory. If no directory is specified, it will list the current
+		directory's contents.
+*/
+void dir(char *input) {
+    char *link;
+    DIR *dir;
+    struct dirent *file;
+    input = strtok(NULL, " ");
+    if (input == NULL)
+        link = ".";
+    else
+        link = input;
     
-    while (fgets (lineInput, MAX_BUFFER, fp )) {	// read a line
-        printf("%d. %s", lineNo++, lineInput);	// print the command number
-        tokenize();	// tokenize the line
-        runCommand();	// run command
-        putchar('\n');
+    if ((dir = opendir(link)) == NULL)
+        perror("opendir() error");
+    while((file = readdir(dir)) != NULL)
+        fprintf(stdout, " %s\t", file->d_name);
+    fprintf(stdout, "\n");
+}
+
+/* Clears the screen of all content.
+*/
+void clr() {
+    printf("\033[2J\033[1;1H");
+}
+
+/*	Changes the current directory, or lists directory contents if directory is 
+        unspecified.  
+*/
+void cd(char *input) {
+   	input = strtok(NULL, " ");
+    if(input == NULL) {
+        char cwd[1024];
+        if (getcwd(cwd, sizeof(cwd)) != NULL){
+            fprintf(stdout,"%s",cwd);
+        }
+    }else if(input[0] == '/'){
+        fprintf(stdout,"changing from root");
+        chdir(input);
+    }else {
+        char cwd[1024];
+        if (getcwd(cwd, sizeof(cwd)) != NULL){
+            char p[strlen(input)+1];
+            strcat(p,input);
+            strcat(cwd,p);
+            chdir(input);
+        }
     }
     
-    fclose(fp);	// close the file
-    exit(0);	// exit when at the end of the file
 }
+
+/*  Pauses the shell, which allows the user to input any keystroke within 
+		the shell without manipulating the shell in anyway. Only when the
+		user presses the [Enter] key will the shell return to active */
+void paws(){
+    fprintf(stdout, "Press 'ENTER' to continue.");
+    gets(NULL);
+}
+
+
