@@ -1,98 +1,176 @@
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
-#include <stdlib.h>
+#include <string.h>
 #include <dirent.h>
+#include <stdlib.h>
+#include <assert.h>
 
-int count(char* buffer)
-{
-    int count=0;
-    //do some stuff here, come on this should be easy guys!
-    return count;
-}
+char *cdir;
+void batch(char *b);
+void run(char *line);
+void noParam();
 void cd(char *path);
+void dir(char *input);
 void clr();
-void dir();
-void environ();
+void env();
 void echo(char *string);
 void help();
-void paws(); //word pause causes an error
-void quit();
-
-int main(int argc, char **argv)
-{
-        //buffer is to hold the commands that the user will type in
-        char buffer[512];
-        // /bin/program_name is the arguments to pass to execv
-        //if we want to run ls, "/bin/ls" is required to be passed to execv()
-        char* path = "/bin/";
-
-        while(1)
-        {
-                //print the prompt
-                printf("myShell>");
-                //get input
-                fgets(buffer, 512, stdin);
-                //fork!
-                int pid = fork();
-                //Error checking to see if fork works
-                //If pid !=0 then it's the parent
-                if(pid!=0)
-                {
-                        wait(NULL);
-                }
-                else
-                {
-                        int no_of_args = count(buffer);
-            //we plus one so that we can make it NULl
-            char** array_of_strings = malloc((sizeof(char*)*(no_of_args+1)));
-
-            //here we break the string up and create an array of pointers that point to each of the arguments.
-            int count=0;
-            char* pch2;
-            pch2 = strtok (buffer," ");
-            while (pch2 != NULL)
-            {
-                array_of_strings[count]=(char*)malloc((sizeof(char)*strlen(pch2)));
-                strcpy(array_of_strings[count], pch2);
-                //printf("[%d]:%sn", count, array_of_strings[count]);
-                pch2 = strtok (NULL, " ");
-                count++;
-            }
-
-            //format for command is eg. ls -a -l
-            //therefore the first element in the array will be the program name
-            //add the path so it'll be /bin/command eg. /bin/ls
-            char* prog = malloc(sizeof(char)*(strlen(array_of_strings[0]+strlen(path))));
-            prog = strcat(strcpy(prog, path),array_of_strings[0]);
+void paws();
 
 
-            /*
-            int k=0;
-            for(k=0; k<(no_of_args); k++)
-                printf(">>>>%sn", array_of_strings[k]);
-            */
+int main(int argc, char *argv[]){
+    (getcwd(cdir, sizeof(cdir)) != NULL);
+    if(argc==1){
+        noParam();
+    }else if(argc==2){
+        batch(argv[1]);
+        //batch file input
+    }else{
+        fprintf(stdout,"Too many parameters.");
+    }
+    return 1;
+}
+void noParam(){
+    while(1){
+        char command[1024];
+        gets(command);
+        char *input = strtok(command, " ");
+        run(input);
+    }
+}
 
-                        //pass the prepared arguments to execv and we're done!
-                        int rv = execv(prog, array_of_strings);
-                }
+void batch(char *b){
+    FILE *f = fopen(b,"r");
+    char *line;
+    while(fscanf(f, "%s\n", line) != EOF){
+        run(line);
+    }
+}
+void run(char *line){
+    if(strcmp(line,"cd")==0){
+        cd(line);
+    }else if(strcmp(line,"dir")==0){
+        dir(line);
+    }else if(strcmp(line,"clr")==0){
+        clr();
+    }else if(strcmp(line,"enviro")==0){
+        env();
+    }else if(strcmp(line,"echo")==0){
+        echo(line);
+    }else if(strcmp(line,"help")==0){
+        help();
+    }else if(strcmp(line,"pause")==0){
+        paws();
+    }else if(strcmp(line,"quit")==0){
+        exit(1);
+    }else{
+        char *args[20];
+        int x = 0;
+        int y = 20;
+        while (line != NULL) {
+           if (x == y) {
+                y = y * 2;
+                x=y;
+                *args = (char *)realloc(*args, y);
+           }
+           args[x] = line;
+           x++;
+           line = strtok(NULL, " ");
         }
-        return 0;
+        args[x] = (char *)0;
+        pid_t pID = fork();
+        char * myPath = malloc(snprintf(NULL, 0, "%s %s", "parent=", getenv("shell")) + 1);
+        char *envp[] = { myPath, (char *) 0};
+        if(pID == 0) {
+            //execv(envargs[0], envargs);
+            int execReturn = execve(args[0], args, envp);
+            if (execReturn == -1){
+                printf("execv failed.");
+                exit(0);
+            }
+        }else if(pID < 0){
+            printf("\nFailed to fork.");
+        }else{}
+    }
 }
 
 void help() {
-    printf(stdout, "               MyShell Help\n");
-    printf(stdout, "cd <directory> - Change the current default directory to <directory>.\n");
-    printf(stdout, "clr - Clear the screen.\n");
-    printf(stdout, "dir <directory> - List the contents of <directory>.\n");
-    printf(stdout, "environ - List all the environment strings.\n");
-    printf(stdout, "echo <comment> - Display <comment> on the display followed by a new line.\n");
-    printf(stdout, "help - Display the user manual.\n");
-    printf(stdout, "pause - Pause operation of the shell until 'Enter' is pressed.\n");
-    printf(stdout, "quit - Quit the shell.\n");
+    fprintf(stdout, "***** HELP ***** HELP IS HERE ***** HELP ***** HELP IS HERE *****\n");
+    fprintf(stdout, "* -------------- Command Manual --------------- *\n");
+    fprintf(stdout, "* @ cd - Transports the lucky bloke to a target directory *\n");
+    fprintf(stdout, "* @ clr - Removes the presence of all that has transpired. *\n");
+    fprintf(stdout, "* @ dir - Generously provides the files/folders of the current directory. *\n");
+    fprintf(stdout, "* @ environ - Delivers a pedantic ecological dissertation on the environmental variables. *\n");
+    fprintf(stdout, "* @ echo - Mimics the command given, be careful. *\n");
+    fprintf(stdout, "* @ help - Here we are my good sir. *\n");
+    fprintf(stdout, "* @ pause - Wait for it... *\n");
+    fprintf(stdout, "* @ quit - Delivers the final blow to this shell. Same as: exit, and kill. *\n");
+    fprintf(stdout, "***** HELP ***** HELP IS HERE ***** HELP ***** HELP IS HERE *****\n");
+}
 
+void echo(char *input) {
+    
+	if (input == NULL){
+        fprintf(stdout, "Nothing to echo");
+    }else{
+        input = strtok(NULL, " ");
+        while(input !=NULL){
+            fprintf(stdout, "%s ", input);
+            input = strtok(NULL, " ");
+        }
+        fprintf(stdout, "\n");
+    }
+}
+
+void env() {
+    extern char **environ;
+    int i = 0;
+    while (environ[i]){
+        fprintf(stdout, "%s\n", environ[i++]);
+    }
+}
+
+void dir(char *input) {
+    char *link;
+    DIR *dir;
+    struct dirent *file;
+    input = strtok(NULL, " ");
+    if (input == NULL){
+        link = ".";
+    }else{
+        link = input;
+    }
+    if ((dir = opendir(link)) == NULL)
+        perror("opendir() error");
+    while((file = readdir(dir)) != NULL)
+        fprintf(stdout, " %s\t", file->d_name);
+    fprintf(stdout, "\n");
 }
 
 void clr() {
-    system("clear");
+    printf("\033[2J\033[1;1H");
+}
+
+void cd(char *input) {
+   	input = strtok(NULL, " ");
+    if(input == NULL) {
+        getcwd(input, sizeof(input));
+        fprintf(stdout,"%s",input);
+    }else if(input[0] == '/'){
+        fprintf(stdout,"changing from root");
+        chdir(input);
+    }else {
+        char cwd[1024];
+        if (getcwd(cwd, sizeof(cwd)) != NULL){
+            char p[strlen(input)+1];
+            strcat(p,input);
+            strcat(cwd,p);
+            chdir(input);
+        }
+    }
+    
+}
+void paws(){
+    fprintf(stdout, "Press 'ENTER' to continue.");
+    gets(NULL);
 }
