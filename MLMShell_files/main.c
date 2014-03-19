@@ -31,11 +31,15 @@ int main(int argc, char *argv[]){
     return 1;
 }
 void noParam(){
+    cd(NULL);
+    fprintf(stdout,">");
     while(1){
         char command[1024];
         gets(command);
         char *input = strtok(command, " ");
         run(input);
+        cd(NULL);
+        fprintf(stdout,">");
     }
 }
 
@@ -47,23 +51,23 @@ void batch(char *b){
     }
 }
 void run(char *line){
-    if(strcmp(line,"cd")==0){
+    if(strcmp(line,"cd")==0)
         cd(line);
-    }else if(strcmp(line,"dir")==0){
+    else if(strcmp(line,"dir")==0)
         dir(line);
-    }else if(strcmp(line,"clr")==0){
+    else if(strcmp(line,"clr")==0)
         clr();
-    }else if(strcmp(line,"enviro")==0){
+    else if(strcmp(line,"enviro")==0)
         env();
-    }else if(strcmp(line,"echo")==0){
+    else if(strcmp(line,"echo")==0)
         echo(line);
-    }else if(strcmp(line,"help")==0){
+    else if(strcmp(line,"help")==0)
         help();
-    }else if(strcmp(line,"pause")==0){
+    else if(strcmp(line,"pause")==0)
         paws();
-    }else if(strcmp(line,"quit")==0){
+    else if(strcmp(line,"quit")==0)
         exit(1);
-    }else{
+    else{
         char *args[20];
         int x = 0;
         int y = 20;
@@ -88,9 +92,9 @@ void run(char *line){
                 printf("execv failed.");
                 exit(0);
             }
-        }else if(pID < 0){
+        }else if(pID < 0)
             printf("\nFailed to fork.");
-        }else{}
+        else{}
     }
 }
 
@@ -110,9 +114,9 @@ void help() {
 
 void echo(char *input) {
     
-	if (input == NULL){
+	if (input == NULL)
         fprintf(stdout, "Nothing to echo");
-    }else{
+    else{
         input = strtok(NULL, " ");
         while(input !=NULL){
             fprintf(stdout, "%s ", input);
@@ -125,9 +129,8 @@ void echo(char *input) {
 void env() {
     extern char **environ;
     int i = 0;
-    while (environ[i]){
+    while (environ[i])
         fprintf(stdout, "%s\n", environ[i++]);
-    }
 }
 
 void dir(char *input) {
@@ -135,11 +138,11 @@ void dir(char *input) {
     DIR *dir;
     struct dirent *file;
     input = strtok(NULL, " ");
-    if (input == NULL){
+    if (input == NULL)
         link = ".";
-    }else{
+    else
         link = input;
-    }
+    
     if ((dir = opendir(link)) == NULL)
         perror("opendir() error");
     while((file = readdir(dir)) != NULL)
@@ -154,8 +157,10 @@ void clr() {
 void cd(char *input) {
    	input = strtok(NULL, " ");
     if(input == NULL) {
-        getcwd(input, sizeof(input));
-        fprintf(stdout,"%s",input);
+        char cwd[1024];
+        if (getcwd(cwd, sizeof(cwd)) != NULL){
+            fprintf(stdout,"%s",cwd);
+        }
     }else if(input[0] == '/'){
         fprintf(stdout,"changing from root");
         chdir(input);
