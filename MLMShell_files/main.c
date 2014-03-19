@@ -1,3 +1,11 @@
+//****************************************************//
+// Laura Sorenson, Malachi Mart, and Monica Pervis    //
+// Project 1                                          //
+// Operating Systems                                  //
+// March 19, 2014                                     //
+//****************************************************//
+
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -21,53 +29,53 @@ void paws();
 int main(int argc, char *argv[]){
     (getcwd(cdir, sizeof(cdir)) != NULL);
     if(argc==1){
-        noParam();
+        noParam();       //There is no parameter if only one argument is present.
     }else if(argc==2){
-        batch(argv[1]);
+        batch(argv[1]);  //Two arguments signals reading from a batch file.
         //batch file input
     }else{
-        fprintf(stdout,"Too many parameters.");
+        fprintf(stdout,"Too many parameters.");  //We don't want more than two.
     }
     return 1;
 }
 void noParam(){
-    cd(NULL);
-    fprintf(stdout,">");
+    cd(NULL);                  //print current location
+    fprintf(stdout,">");       //print >
     while(1){
         char command[1024];
         gets(command);
-        char *input = strtok(command, " ");
-        run(input);
-        cd(NULL);
-        fprintf(stdout,">");
+        char *input = strtok(command, " ");   //split the input up by spaces
+        run(input);                           //run the command
+        cd(NULL);                             //print the next line
+        fprintf(stdout,">");                  //and > again
     }
 }
 
-void batch(char *b){
-    FILE *f = fopen(b,"r");
-    char *line;
-    while(fscanf(f, "%s\n", line) != EOF){
-        run(line);
+void batch(char *b){                          //function to read commands from a batch file
+    FILE *f = fopen(b,"r");                   //open the file and read from it
+    char *line;                               //to hold the line
+    while(fscanf(f, "%s\n", line) != EOF){    //go through each line until the end of the file
+        run(line);                            //run each line
     }
 }
-void run(char *line){
+void run(char *line){                         //function to run commands
     if(strcmp(line,"cd")==0)
-        cd(line);
+        cd(line);                             //call if "cd" is entered, pass in the line
     else if(strcmp(line,"dir")==0)
-        dir(line);
+        dir(line);                            //call dir if "dir" is entered, pass in the line
     else if(strcmp(line,"clr")==0)
-        clr();
-    else if(strcmp(line,"enviro")==0)
-        env();
+        clr();                                //call crl if "clr" is entered
+    else if(strcmp(line,"environ")==0)
+        env();                                //call env if "environ" is entered
     else if(strcmp(line,"echo")==0)
-        echo(line);
+        echo(line);                           //call echo if "echo" is entered, pass in the line
     else if(strcmp(line,"help")==0)
-        help();
+        help();                               //call help if "help" is entered
     else if(strcmp(line,"pause")==0)
-        paws();
+        paws();                               //call paws if "pause" is entered
     else if(strcmp(line,"quit")==0)
-        exit(1);
-    else{
+        exit(1);                              //exit shell if "quit" is entered
+    else{                                     //otherwise, fork!
         char *args[20];
         int x = 0;
         int y = 20;
@@ -98,7 +106,7 @@ void run(char *line){
     }
 }
 
-void help() {
+void help() {     //prints out the help menu
     fprintf(stdout, "***** HELP ***** HELP IS HERE ***** HELP ***** HELP IS HERE *****\n");
     fprintf(stdout, "* -------------- Command Manual --------------- *\n");
     fprintf(stdout, "* @ cd - Transports the lucky bloke to a target directory *\n");
@@ -112,28 +120,28 @@ void help() {
     fprintf(stdout, "***** HELP ***** HELP IS HERE ***** HELP ***** HELP IS HERE *****\n");
 }
 
-void echo(char *input) {
-    
-	if (input == NULL)
-        fprintf(stdout, "Nothing to echo");
+void echo(char *input) {  //function to echo the rest of the input in the line
+
+    if (input == NULL)
+        fprintf(stdout, "Nothing to echo");    //If nothing is in the rest of the line, tell the user why nothing was echoed.
     else{
-        input = strtok(NULL, " ");
+        input = strtok(NULL, " ");             //break everything into tokens
         while(input !=NULL){
-            fprintf(stdout, "%s ", input);
+            fprintf(stdout, "%s ", input);     //print out the tokens
             input = strtok(NULL, " ");
         }
-        fprintf(stdout, "\n");
+        fprintf(stdout, "\n");                 //endline
     }
 }
 
-void env() {
+void env() {                   //function to list the environment strings
     extern char **environ;
     int i = 0;
     while (environ[i])
-        fprintf(stdout, "%s\n", environ[i++]);
+        fprintf(stdout, "%s\n", environ[i++]);  //go through and print all the environment strings
 }
 
-void dir(char *input) {
+void dir(char *input) {       //function to list the contents of the current directory
     char *link;
     DIR *dir;
     struct dirent *file;
@@ -142,7 +150,7 @@ void dir(char *input) {
         link = ".";
     else
         link = input;
-    
+
     if ((dir = opendir(link)) == NULL)
         perror("opendir() error");
     while((file = readdir(dir)) != NULL)
@@ -150,32 +158,32 @@ void dir(char *input) {
     fprintf(stdout, "\n");
 }
 
-void clr() {
-    printf("\033[2J\033[1;1H");
+void clr() {  //function to clear the terminal
+    printf("\033[2J\033[1;1H");  //clears the terminal
 }
 
-void cd(char *input) {
-   	input = strtok(NULL, " ");
-    if(input == NULL) {
+void cd(char *input) {  //function to change the directory we're looking at
+    input = strtok(NULL, " ");   //tokenize the input
+    if(input == NULL) {           //if nothing to change to
         char cwd[1024];
-        if (getcwd(cwd, sizeof(cwd)) != NULL){
+        if (getcwd(cwd, sizeof(cwd)) != NULL){   //just print out the same path we were already in and wait for input
             fprintf(stdout,"%s",cwd);
         }
-    }else if(input[0] == '/'){
+    }else if(input[0] == '/'){                 //if / is there, we'll be changing from the root
         fprintf(stdout,"changing from root");
-        chdir(input);
+        chdir(input);                          //change the direcctory to what was entered in the input
     }else {
         char cwd[1024];
-        if (getcwd(cwd, sizeof(cwd)) != NULL){
+        if (getcwd(cwd, sizeof(cwd)) != NULL){ //otherwise,
             char p[strlen(input)+1];
-            strcat(p,input);
-            strcat(cwd,p);
-            chdir(input);
+            strcat(p,input);                   //add input to the end of p
+            strcat(cwd,p);                     //add the new p to the end of cwd
+            chdir(input);                      //change the directory
         }
     }
-    
+
 }
-void paws(){
-    fprintf(stdout, "Press 'ENTER' to continue.");
-    gets(NULL);
+void paws(){  //function to pause shell operation
+    fprintf(stdout, "Press 'ENTER' to continue.");  //tell the user what's going on
+    gets(NULL);  //pauses everything until enter is pressed
 }
