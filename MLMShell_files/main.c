@@ -150,67 +150,6 @@ the tokens defined at the top, and store it in the args char array.
     return EXIT_SUCCESS;
 }
 
-
-
-
-
-
-
-///* Change the current directory, or list directory contents if no
-//directory is specified */
-//void cd(){
-//    if (args[1] == NULL)
-//    {
-//        system("ls -al");
-//    }
-//    if (chdir(args[1]) != 0)
-//    {
-//        perror("cd");
-//    }
-//}
-
-///* Clear the terminal. This will use the system's call to clear
-//the terminal of all previous commands. */
-//void clr() {
-//    system("clear");
-//}
-
-///* List the directory contents.  If no directory is specified, it will list the current
-//directory's contents. */
-////void dir(args1){
-////    if (args[1] != NULL)	// if <directory> exists
-////    {
-////        sprintf(dirCommand, "ls -al %s", args[1]);
-////        system(dirCommand);	// send "ls -al <directory>" to term
-////    }
-////    else
-////    {
-////        system("ls -al");	// if <directory> does not exist
-////    }
-////}
-
-///* Prints out the environment variables. It prints the location
-//of the shell, including the binary name, and the current directory.*/
-//void environ(char arg0){
-//    printf("Shell: %s",shellLocation, "%s", arg0);
-//    printf("\nCurrent Directory: %s\n", path);
-//}
-
-//void echo(){
-//    int i = 1;
-//    while ( args[i] != NULL)
-//    {
-//        printf("%s ", args[i]);
-//        i++;
-//    }
-//    printf("\n");
-//}
-
-//void paws (){ //word pause causes an error
-//    system("read -p \"Please press 'Enter' to continue...\"");
-//}
-
-
 //void quit(){
 //    printf("Exiting myShell...\n");
 //    return EXIT_SUCCESS;
